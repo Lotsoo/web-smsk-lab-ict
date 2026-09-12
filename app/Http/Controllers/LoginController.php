@@ -31,6 +31,10 @@ class LoginController extends Controller
         ]);
 
         if (Auth::attempt($credentials)) {
+            if (!Auth::user()->is_active) {
+                Auth::logout();
+                return back()->with('loginError', 'Akun Anda telah dinonaktifkan! Silakan hubungi administrator.');
+            }
             $request->session()->regenerate();
 
             return redirect()->intended('/dashboard')->with('success', 'Login Success!');
