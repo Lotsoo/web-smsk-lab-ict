@@ -237,6 +237,13 @@
                         <span>Revisi</span>
                     </a>
                 </li>
+                <li class="sidebar-menu-item">
+                    <a href="{{ route('users.index') }}"
+                        class="sidebar-menu-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                        <i class="bi bi-people-fill"></i>
+                        <span>Kelola User</span>
+                    </a>
+                </li>
             </ul>
         </div>
         <div class="sidebar-footer">

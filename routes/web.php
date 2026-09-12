@@ -4,6 +4,7 @@ use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Dashboard\SuratKeluarController;
 use App\Http\Controllers\Dashboard\SuratMasukController;
 use App\Http\Controllers\Dashboard\SuratRevisiController;
+use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\LoginController;
 use App\Http\Middleware\Authenticate;
 use Illuminate\Support\Facades\Route;
@@ -22,6 +23,16 @@ Route::get('/login', [LoginController::class, 'index'])->name('login');
 Route::middleware(['auth'])->group(function () {
     Route::prefix('dashboard')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+        Route::prefix('users')->group(function () {
+            Route::get('/', [UserController::class, 'index'])->name('users.index');
+            Route::get('/create', [UserController::class, 'create'])->name('users.create');
+            Route::post('/', [UserController::class, 'store'])->name('users.store');
+            Route::get('/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
+            Route::put('/{id}', [UserController::class, 'update'])->name('users.update');
+            Route::delete('/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+            Route::patch('/{id}/toggle-status', [UserController::class, 'toggleStatus'])->name('users.toggle-status');
+        });
 
         Route::prefix('surat-masuk')->group(function () {
             Route::get('/', [SuratMasukController::class, 'index'])->name('surat-masuk');
