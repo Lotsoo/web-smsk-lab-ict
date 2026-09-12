@@ -141,15 +141,28 @@ class UserManagementTest extends TestCase
         ]);
     }
 
-    public function test_can_delete_other_user()
+    public function test_superadmin_can_delete_other_user()
     {
-        $admin = User::factory()->create(['is_active' => true]);
-        $targetUser = User::factory()->create();
+        $superadmin = User::factory()->create(['role' => 'superadmin', 'is_active' => true]);
+        $targetUser = User::factory()->create(['role' => 'admin']);
 
-        $response = $this->actingAs($admin)->delete("/dashboard/users/{$targetUser->id}");
+        $response = $this->actingAs($superadmin)->delete("/dashboard/users/{$targetUser->id}");
 
         $response->assertRedirect(route('users.index'));
         $this->assertDatabaseMissing('users', [
+            'id' => $targetUser->id,
+        ]);
+    }
+
+    public function test_regular_admin_cannot_delete_any_user()
+    {
+        $admin = User::factory()->create(['role' => 'admin', 'is_active' => true]);
+        $targetUser = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)->delete("/dashboard/users/{$targetUser->id}");
+
+        $response->assertSessionHas('error', 'Hanya Superadmin yang memiliki akses untuk menghapus akun!');
+        $this->assertDatabaseHas('users', [
             'id' => $targetUser->id,
         ]);
     }
@@ -207,7 +220,7 @@ class UserManagementTest extends TestCase
 
         // Admin tries to delete superadmin
         $response = $this->actingAs($admin)->delete("/dashboard/users/{$superadmin->id}");
-        $response->assertSessionHas('error', 'Anda tidak memiliki akses untuk menghapus akun Superadmin!');
+        $response->assertSessionHas('error', 'Hanya Superadmin yang memiliki akses untuk menghapus akun!');
     }
 
     public function test_user_cannot_change_other_users_password()

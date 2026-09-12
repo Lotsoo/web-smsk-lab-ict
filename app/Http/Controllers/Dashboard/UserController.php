@@ -78,11 +78,14 @@ class UserController extends Controller
 
         $user = User::create($validated);
 
+        $roleName = $user->role === 'superadmin' ? 'Superadmin' : 'Admin';
+        $statusName = $user->is_active ? 'Aktif' : 'Nonaktif';
+
         ActivityLog::log(
             'created',
             'user',
             'Menambahkan User Baru',
-            "Menambahkan user baru: {$user->name} ({$user->username})",
+            "Menambahkan user baru: {$user->name} (@{$user->username}) - Role: {$roleName}, Status: {$statusName}",
             $user->id
         );
 
@@ -145,19 +148,53 @@ class UserController extends Controller
             return back()->with('error', 'Anda tidak dapat menonaktifkan akun Anda sendiri!')->withInput();
         }
 
+        $oldValues = [
+            'name' => $user->name,
+            'username' => $user->username,
+            'role' => $user->role,
+            'is_active' => $user->is_active,
+        ];
+
+        $passwordChanged = false;
         if ($user->id === auth()->id() && $request->filled('password')) {
             $validated['password'] = Hash::make($request->password);
+            $passwordChanged = true;
         } else {
             unset($validated['password']);
         }
 
         $user->update($validated);
 
+        $changes = [];
+        if ($oldValues['name'] !== $user->name) {
+            $changes[] = "Nama ('{$oldValues['name']}' → '{$user->name}')";
+        }
+        if ($oldValues['username'] !== $user->username) {
+            $changes[] = "Username ('@{$oldValues['username']}' → '@{$user->username}')";
+        }
+        if ($oldValues['role'] !== $user->role) {
+            $oldRole = $oldValues['role'] === 'superadmin' ? 'Superadmin' : 'Admin';
+            $newRole = $user->role === 'superadmin' ? 'Superadmin' : 'Admin';
+            $changes[] = "Role ({$oldRole} → {$newRole})";
+        }
+        if ((bool)$oldValues['is_active'] !== (bool)$user->is_active) {
+            $oldStatus = $oldValues['is_active'] ? 'Aktif' : 'Nonaktif';
+            $newStatus = $user->is_active ? 'Aktif' : 'Nonaktif';
+            $changes[] = "Status ({$oldStatus} → {$newStatus})";
+        }
+        if ($passwordChanged) {
+            $changes[] = "Password diperbarui";
+        }
+
+        $detailDescription = !empty($changes)
+            ? "Mengubah data user {$user->name}: " . implode(', ', $changes)
+            : "Memperbarui data user {$user->name} (@{$user->username})";
+
         ActivityLog::log(
             'updated',
             'user',
             'Mengubah Data User',
-            "Mengubah data user: {$user->name} ({$user->username})",
+            $detailDescription,
             $user->id
         );
 
@@ -192,7 +229,7 @@ class UserController extends Controller
             'updated',
             'user',
             'Mengubah Status User',
-            "Status akun user {$user->name} berhasil {$statusText}",
+            "Status akun user {$user->name} (@{$user->username}) berhasil {$statusText}",
             $user->id
         );
 
@@ -206,8 +243,8 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        if (auth()->user()->role !== 'superadmin' && $user->role === 'superadmin') {
-            return back()->with('error', 'Anda tidak memiliki akses untuk menghapus akun Superadmin!');
+        if (auth()->user()->role !== 'superadmin') {
+            return back()->with('error', 'Hanya Superadmin yang memiliki akses untuk menghapus akun!');
         }
 
         if ($user->role === 'superadmin') {
@@ -219,13 +256,14 @@ class UserController extends Controller
         }
 
         $userName = $user->name;
+        $userUsername = $user->username;
         $user->delete();
 
         ActivityLog::log(
             'deleted',
             'user',
             'Menghapus User',
-            "Menghapus user: {$userName}",
+            "Menghapus user {$userName} (@{$userUsername})",
             $id
         );
 
