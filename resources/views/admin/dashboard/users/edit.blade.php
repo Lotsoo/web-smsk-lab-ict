@@ -86,8 +86,8 @@
                             <div class="input-group">
                                 <span class="input-group-text bg-light"><i class="bi bi-shield-check text-muted"></i></span>
                                 <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required>
-                                    <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin (Akses Standar)</option>
-                                    <option value="superadmin" {{ old('role', $user->role) == 'superadmin' ? 'selected' : '' }}>Superadmin (Akses Penuh / Review)</option>
+                                    <option value="admin" {{ old('role', $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
+                                    <option value="superadmin" {{ old('role', $user->role) == 'superadmin' ? 'selected' : '' }}>Superadmin</option>
                                 </select>
                             </div>
                             @error('role')
@@ -97,7 +97,7 @@
                             <input type="hidden" name="role" value="{{ $user->role }}">
                             <div class="input-group">
                                 <span class="input-group-text bg-light"><i class="bi bi-person-badge text-muted"></i></span>
-                                <input type="text" class="form-control bg-light" value="{{ $user->role === 'superadmin' ? 'Superadmin (Akses Penuh)' : 'Admin (Akses Standar)' }}" readonly disabled>
+                                <input type="text" class="form-control bg-light" value="{{ $user->role === 'superadmin' ? 'Superadmin' : 'Admin' }}" readonly disabled>
                             </div>
                         @endif
                     </div>

@@ -167,16 +167,18 @@
                                             @endif
                                         </form>
 
-                                        <!-- Delete Button -->
-                                        <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                onclick="return confirm('Apakah Anda yakin ingin menghapus user {{ $user->name }}? Tindakan ini tidak dapat dibatalkan.')"
-                                                title="Hapus User">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
+                                        <!-- Delete Button (Hanya Superadmin) -->
+                                        @if(auth()->user()->role === 'superadmin')
+                                            <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="d-inline">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('Apakah Anda yakin ingin menghapus user {{ $user->name }}? Tindakan ini tidak dapat dibatalkan.')"
+                                                    title="Hapus User">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        @endif
                                     @endif
                                 </div>
                             </td>
@@ -266,8 +268,8 @@
                                                     <div class="input-group">
                                                         <span class="input-group-text bg-light"><i class="bi bi-shield-check text-muted"></i></span>
                                                         <select class="form-select @error('role') is-invalid @enderror" id="edit_role_{{ $user->id }}" name="role" required>
-                                                            <option value="admin" {{ (old('user_id') == $user->id ? old('role') : $user->role) == 'admin' ? 'selected' : '' }}>Admin (Akses Standar)</option>
-                                                            <option value="superadmin" {{ (old('user_id') == $user->id ? old('role') : $user->role) == 'superadmin' ? 'selected' : '' }}>Superadmin (Akses Penuh / Review)</option>
+                                                            <option value="admin" {{ (old('user_id') == $user->id ? old('role') : $user->role) == 'admin' ? 'selected' : '' }}>Admin</option>
+                                                            <option value="superadmin" {{ (old('user_id') == $user->id ? old('role') : $user->role) == 'superadmin' ? 'selected' : '' }}>Superadmin</option>
                                                         </select>
                                                     </div>
                                                     @error('role')
@@ -279,7 +281,7 @@
                                                     <input type="hidden" name="role" value="{{ $user->role }}">
                                                     <div class="input-group">
                                                         <span class="input-group-text bg-light"><i class="bi bi-person-badge text-muted"></i></span>
-                                                        <input type="text" class="form-control bg-light" value="{{ $user->role === 'superadmin' ? 'Superadmin (Akses Penuh)' : 'Admin (Akses Standar)' }}" readonly disabled>
+                                                        <input type="text" class="form-control bg-light" value="{{ $user->role === 'superadmin' ? 'Superadmin' : 'Admin' }}" readonly disabled>
                                                     </div>
                                                 @endif
                                             </div>
@@ -420,8 +422,8 @@
                             <div class="input-group">
                                 <span class="input-group-text bg-light"><i class="bi bi-shield-check text-muted"></i></span>
                                 <select class="form-select @error('role') is-invalid @enderror" id="create_role" name="role" required>
-                                    <option value="admin" {{ (!old('user_id') && old('role', 'admin') == 'admin') ? 'selected' : '' }}>Admin (Akses Standar)</option>
-                                    <option value="superadmin" {{ (!old('user_id') && old('role') == 'superadmin') ? 'selected' : '' }}>Superadmin (Akses Penuh / Review)</option>
+                                    <option value="admin" {{ (!old('user_id') && old('role', 'admin') == 'admin') ? 'selected' : '' }}>Admin</option>
+                                    <option value="superadmin" {{ (!old('user_id') && old('role') == 'superadmin') ? 'selected' : '' }}>Superadmin</option>
                                 </select>
                             </div>
                             @error('role')
@@ -433,7 +435,7 @@
                             <input type="hidden" name="role" value="admin">
                             <div class="input-group">
                                 <span class="input-group-text bg-light"><i class="bi bi-person-badge text-muted"></i></span>
-                                <input type="text" class="form-control bg-light" value="Admin (Akses Standar)" readonly disabled>
+                                <input type="text" class="form-control bg-light" value="Admin" readonly disabled>
                             </div>
                             <div class="form-text text-muted">Role pengguna baru secara otomatis diset sebagai Admin.</div>
                         @endif
